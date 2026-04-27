@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser Properties Demo</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      width: min(800px, 92vw);
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #38bdf8;
+      font-size: 2rem;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+
+    .btn {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .output {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: monospace;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .label {
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Browser Properties Demo</h1>
+    <p>Click the button to display browser information collected with JavaScript.</p>
+
+    <button class="btn" onclick="showBrowserInfo()">Show Browser Info</button>
+
+    <div id="output" class="output">Press the button to see browser properties...</div>
+  </div>
+
+  <script>
+    function showBrowserInfo() {
+      const info = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen: `${screen.width} x ${screen.height}`,
+        colorDepth: screen.colorDepth,
+        platform: navigator.platform,
+        cookiesEnabled: navigator.cookieEnabled,
+        online: navigator.onLine
+      };
+
+      const text = Object.entries(info)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n");
+
+      document.getElementById("output").textContent = text;
+
+      console.log("Browser Info:", info);
+    }
+  </script>
+</body>
+</html>
