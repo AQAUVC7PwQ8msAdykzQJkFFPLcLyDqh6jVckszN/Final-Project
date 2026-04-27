@@ -2,157 +2,414 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Browser Fingerprinting Demo</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
+      --bg: #07111f;
+      --panel: rgba(15, 23, 42, 0.92);
+      --panel-2: rgba(30, 41, 59, 0.92);
       --text: #e2e8f0;
-      --accent: #38bdf8;
       --muted: #94a3b8;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --border: rgba(148, 163, 184, 0.22);
     }
+
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
-      padding: 0;
+      min-height: 100%;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg);
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 28%),
+        linear-gradient(180deg, #020617 0%, var(--bg) 100%);
     }
 
     .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 16px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 40px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+      margin-bottom: 18px;
     }
 
     h1 {
-      font-size: 2rem;
-      margin-bottom: 8px;
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
       color: var(--accent);
     }
 
-    p.subtitle {
+    .subtitle {
+      margin: 0;
       color: var(--muted);
-      margin-top: 0;
-      margin-bottom: 24px;
+      max-width: 850px;
+      line-height: 1.6;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .primary { background: var(--accent); color: #07111f; }
+    .secondary { background: #334155; color: var(--text); }
+    .danger { background: #ef4444; color: white; }
+
+    .status {
+      font-size: 0.95rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 16px;
     }
 
     .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    @media (max-width: 900px) {
+      .span-6 { grid-column: span 12; }
     }
 
     h2 {
-      font-size: 1.25rem;
-      margin-top: 0;
-      margin-bottom: 12px;
+      margin: 0 0 12px;
+      font-size: 1.15rem;
       color: var(--accent);
     }
 
-    pre {
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .metric .label { color: var(--muted); font-size: 0.8rem; margin-bottom: 6px; }
+    .metric .value { font-size: 1rem; word-break: break-word; }
+
+    @media (max-width: 700px) {
+      .metric-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    pre, code {
       margin: 0;
-      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 0.9rem;
-      line-height: 1.4;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    pre {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      overflow-x: auto;
       color: #cbd5e1;
     }
 
     .hash {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      word-break: break-all;
-      color: var(--accent);
+      color: #67e8f9;
+      font-size: 0.95rem;
     }
 
-    .note {
-      font-size: 0.85rem;
-      color: var(--muted);
+    .bar {
+      height: 10px;
+      background: rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      overflow: hidden;
       margin-top: 8px;
     }
 
-    button {
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--good));
+      transition: width .35s ease;
     }
 
-    button:hover {
-      opacity: 0.9;
+    .small {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-top: 8px;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .item {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid var(--border);
+    }
+
+    .item .k { color: var(--muted); }
+    .item .v { text-align: right; word-break: break-word; }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Browser Fingerprinting Demo</h1>
-    <p class="subtitle">
-      This page collects basic browser and device signals and generates a SHA-256 hash as a simple fingerprint.
-    </p>
-
-    <div class="card">
-      <h2>Generated Fingerprint Data</h2>
-      <pre id="fingerprint-data">Loading...</pre>
-      <div class="note">
-        This data is collected from your browser using JavaScript.
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Fingerprint Hash (SHA-256)</h2>
-      <pre id="fingerprint-hash" class="hash">Loading...</pre>
-      <div class="note">
-        The hash is computed from the data above. It changes if your browser, OS, or settings change.
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Demo Controls</h2>
-      <button id="regenerate">Regenerate Fingerprint</button>
-      <p class="note">
-        Click the button to recompute the fingerprint. Check your browser console for the raw output too.
+    <section class="hero">
+      <h1>Advanced Browser Fingerprinting Demo</h1>
+      <p class="subtitle">
+        This page gathers several browser and device signals, creates a SHA-256 fingerprint, and also tests Canvas and WebGL so you can show a more advanced fingerprinting demo in your presentation.
       </p>
-    </div>
+      <div class="topbar">
+        <button id="scanBtn" class="primary">Generate Fingerprint</button>
+        <button id="canvasBtn" class="secondary">Rebuild Canvas Hash</button>
+        <button id="clearBtn" class="danger">Clear Output</button>
+        <div id="status" class="status">Ready to scan.</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card span-12">
+        <h2>Fingerprint Strength</h2>
+        <div class="bar"><div id="strengthFill" class="fill"></div></div>
+        <div id="strengthText" class="small">0 signals collected</div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Collected Browser Data</h2>
+        <div class="metric-row" id="metrics"></div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Fingerprint Hash</h2>
+        <pre id="fingerprintHash" class="hash">Click Generate Fingerprint</pre>
+        <div class="footer-note">The hash is based on the combined browser signals below.</div>
+      </div>
+
+      <div class="card span-6">
+        <h2>Canvas Fingerprint</h2>
+        <canvas id="canvas" width="420" height="140" style="width:100%;max-width:420px;border:1px solid rgba(148,163,184,0.22);border-radius:12px;background:#fff;"></canvas>
+        <pre id="canvasHash" class="hash" style="margin-top:12px;">Not generated yet</pre>
+      </div>
+
+      <div class="card span-6">
+        <h2>WebGL Fingerprint</h2>
+        <div id="webglInfo" class="list"></div>
+      </div>
+
+      <div class="card span-12">
+        <h2>Raw Fingerprint Data</h2>
+        <pre id="rawData">No data yet</pre>
+      </div>
+    </section>
   </div>
 
   <script>
-    async function fingerprint() {
+    const $ = id => document.getElementById(id);
+
+    function safe(v) {
+      return v === undefined || v === null || v === '' ? 'Unknown' : String(v);
+    }
+
+    function getWebGL() {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) return { supported: false };
+      const debug = gl.getExtension('WEBGL_debug_renderer_info');
+      return {
+        supported: true,
+        vendor: debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : 'Unavailable',
+        renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : 'Unavailable',
+        version: gl.getParameter(gl.VERSION),
+        shadingLanguage: gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
+      };
+    }
+
+    function drawCanvas() {
+      const canvas = $('canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 28px Arial';
+      ctx.fillText('Fingerprint Demo', 18, 42);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(18, 56, 384, 62);
+      ctx.fillStyle = '#1d4ed8';
+      ctx.font = '18px Georgia';
+      ctx.fillText('Canvas rendering changes by device/browser', 28, 96);
+      ctx.beginPath();
+      ctx.arc(360, 42, 16, 0, Math.PI * 2);
+      ctx.fillStyle = '#22c55e';
+      ctx.fill();
+      return canvas.toDataURL();
+    }
+
+    async function sha256(text) {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function buildMetrics(data) {
+      const metrics = [
+        ['User Agent', data.userAgent],
+        ['Language', data.language],
+        ['Time Zone', data.timeZone],
+        ['Screen', data.screen],
+        ['Color Depth', data.colorDepth],
+        ['Platform', data.platform],
+        ['Cookies Enabled', data.cookiesEnabled],
+        ['Online', data.online],
+        ['Touch Points', data.touchPoints],
+        ['Hardware Concurrency', data.hardwareConcurrency],
+        ['Device Memory', data.deviceMemory],
+        ['Do Not Track', data.doNotTrack]
+      ];
+
+      $('metrics').innerHTML = metrics.map(([k, v]) => `
+        <div class="metric"><div class="label">${k}</div><div class="value">${safe(v)}</div></div>
+      `).join('');
+    }
+
+    function buildWebGL(info) {
+      if (!info.supported) {
+        $('webglInfo').innerHTML = '<div class="item"><div class="k">WebGL</div><div class="v">Not supported</div></div>';
+        return;
+      }
+      $('webglInfo').innerHTML = `
+        <div class="item"><div class="k">Vendor</div><div class="v">${safe(info.vendor)}</div></div>
+        <div class="item"><div class="k">Renderer</div><div class="v">${safe(info.renderer)}</div></div>
+        <div class="item"><div class="k">Version</div><div class="v">${safe(info.version)}</div></div>
+        <div class="item"><div class="k">Shading Language</div><div class="v">${safe(info.shadingLanguage)}</div></div>
+      `;
+    }
+
+    async function generateFingerprint() {
+      $('status').textContent = 'Collecting browser signals...';
+      const webgl = getWebGL();
+      const canvasDataUrl = drawCanvas();
+      const canvasHash = await sha256(canvasDataUrl);
+
       const data = {
         userAgent: navigator.userAgent,
         language: navigator.language,
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+        screen: `${screen.width}x${screen.height}`,
+        colorDepth: screen.colorDepth,
         platform: navigator.platform,
+        cookiesEnabled: navigator.cookieEnabled,
+        online: navigator.onLine,
+        touchPoints: navigator.maxTouchPoints,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        deviceMemory: navigator.deviceMemory ?? 'Unavailable',
+        doNotTrack: navigator.doNotTrack,
+        webgl
       };
 
-      const raw = JSON.stringify(data, null, 2);
-      const hashBuffer = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(raw)
-      );
+      buildMetrics(data);
+      buildWebGL(webgl);
 
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+      const combined = JSON.stringify({ ...data, canvasHash });
+      const fingerprintHash = await sha256(combined);
 
-      document.getElementById("fingerprint-data").textContent = raw;
-      document.getElementById("fingerprint-hash").textContent = hash;
+      $('rawData').textContent = JSON.stringify({ ...data, canvasHash }, null, 2);
+      $('canvasHash').textContent = canvasHash;
+      $('fingerprintHash').textContent = fingerprintHash;
 
-      console.log("Fingerprint data:", data);
-      console.log("Fingerprint hash:", hash);
+      const signalCount = Object.values(data).filter(v => v !== undefined && v !== null).length + 1;
+      $('strengthFill').style.width = Math.min(100, signalCount * 7).toFixed(0) + '%';
+      $('strengthText').textContent = `${signalCount} signals collected`;
+      $('status').textContent = 'Fingerprint generated successfully.';
 
-      return { data, hash };
+      console.log('Fingerprint data:', { ...data, canvasHash });
+      console.log('Fingerprint hash:', fingerprintHash);
+      return { data, canvasHash, fingerprintHash };
     }
 
-    document.getElementById("regenerate").addEventListener("click", fingerprint);
+    $('scanBtn').addEventListener('click', generateFingerprint);
+    $('canvasBtn').addEventListener('click', async () => {
+      $('status').textContent = 'Rebuilding canvas hash...';
+      const canvasDataUrl = drawCanvas();
+      const hash = await sha256(canvasDataUrl);
+      $('canvasHash').textContent = hash;
+      $('status').textContent = 'Canvas hash updated.';
+    });
+    $('clearBtn').addEventListener('click', () => {
+      $('metrics').innerHTML = '';
+      $('webglInfo').innerHTML = '';
+      $('rawData').textContent = 'No data yet';
+      $('canvasHash').textContent = 'Not generated yet';
+      $('fingerprintHash').textContent = 'Click Generate Fingerprint';
+      $('strengthFill').style.width = '0%';
+      $('strengthText').textContent = '0 signals collected';
+      $('status').textContent = 'Cleared.';
+      const ctx = $('canvas').getContext('2d');
+      ctx.clearRect(0, 0, $('canvas').width, $('canvas').height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, $('canvas').width, $('canvas').height);
+    });
 
-    // Run once on page load
-    fingerprint();
+    generateFingerprint();
   </script>
 </body>
 </html>
