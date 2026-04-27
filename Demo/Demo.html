@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Browser Fingerprinting Demo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --accent: #38bdf8;
+      --muted: #94a3b8;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    p.subtitle {
+      color: var(--muted);
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    pre {
+      margin: 0;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #cbd5e1;
+    }
+
+    .hash {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-all;
+      color: var(--accent);
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    button {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Browser Fingerprinting Demo</h1>
+    <p class="subtitle">
+      This page collects basic browser and device signals and generates a SHA-256 hash as a simple fingerprint.
+    </p>
+
+    <div class="card">
+      <h2>Generated Fingerprint Data</h2>
+      <pre id="fingerprint-data">Loading...</pre>
+      <div class="note">
+        This data is collected from your browser using JavaScript.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Fingerprint Hash (SHA-256)</h2>
+      <pre id="fingerprint-hash" class="hash">Loading...</pre>
+      <div class="note">
+        The hash is computed from the data above. It changes if your browser, OS, or settings change.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Demo Controls</h2>
+      <button id="regenerate">Regenerate Fingerprint</button>
+      <p class="note">
+        Click the button to recompute the fingerprint. Check your browser console for the raw output too.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    async function fingerprint() {
+      const data = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+        platform: navigator.platform,
+      };
+
+      const raw = JSON.stringify(data, null, 2);
+      const hashBuffer = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(raw)
+      );
+
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hash = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+
+      document.getElementById("fingerprint-data").textContent = raw;
+      document.getElementById("fingerprint-hash").textContent = hash;
+
+      console.log("Fingerprint data:", data);
+      console.log("Fingerprint hash:", hash);
+
+      return { data, hash };
+    }
+
+    document.getElementById("regenerate").addEventListener("click", fingerprint);
+
+    // Run once on page load
+    fingerprint();
+  </script>
+</body>
+</html>
